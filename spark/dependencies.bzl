@@ -81,7 +81,7 @@ filegroup (
     if "io_bazel_rules_docker" not in existing:
         git_repository(
             name = "io_bazel_rules_docker",
-            commit = "452878d665648ada0aaf816931611fdd9c683a97",
+            commit = "7401cb256222615c497c0dee5a4de5724a4f4cc7",
             remote = "git@github.com:bazelbuild/rules_docker.git",
         )
 
