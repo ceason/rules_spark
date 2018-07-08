@@ -1,7 +1,7 @@
 ## Usage
 
 #### WORKSPACE
-```
+```python
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
@@ -41,7 +41,7 @@ k8s_repositories()
 ```
 
 #### BUILD
-```
+```python
 load("@rules_spark//spark:scala.bzl", "spark_scala_image")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 
