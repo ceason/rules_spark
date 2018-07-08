@@ -1,0 +1,33 @@
+load("@io_bazel_rules_scala//scala:scala_import.bzl", "scala_import")
+
+genrule(
+    name = "spark_dist_shaded_jars",
+    srcs = [
+        ":pom.xml",
+        ":settings.xml",
+    ],
+    outs = [
+        ":sparkbundle-1.0-SNAPSHOT.jar",
+        ":sparkbundle-1.0-SNAPSHOT-sources.jar",
+    ],
+    cmd = """
+        set -x
+        mvn="`pwd`/$(location @maven//:mvn) -T 1C --settings `pwd`/$(location :settings.xml)"
+        workdir=`mktemp -d`
+        cp $(location :pom.xml) $$workdir/
+        pushd $$workdir
+        $$mvn package
+        popd
+        mv $$workdir/target/*.jar $(@D)/
+        rm -rf $$workdir
+    """,
+    local = 1,  # we run w/o sandboxing so mvn can use ~/.m2 cache
+    tools = ["@maven//:mvn"],
+)
+
+scala_import(
+    name = "jar_bundle",
+    jars = [":sparkbundle-1.0-SNAPSHOT.jar"],
+#    srcjar = ":sparkbundle-1.0-SNAPSHOT-sources.jar",
+    visibility = ["//visibility:public"],
+)

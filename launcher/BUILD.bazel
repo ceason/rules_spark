@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "main",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    importpath = "github.com/redventures-incubator/spark-bazel-k8s-demo/launcher",
+    visibility = ["//visibility:private"],
+)
+
+go_test(
+    name = "launcher_test",
+    size = "small",
+    srcs = glob(["*_test.go"]),
+    data = glob(["testdata/**"]),
+    embed = [":main"],
+)
+
+go_binary(
+    name = "launcher",
+    embed = [":main"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//spark:__pkg__"],
+)

@@ -1,0 +1,186 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "creationTimestamp": "2018-06-04T17:30:53Z",
+        "generateName": "kinesistomssql-74d7dc47b5-",
+        "labels": {
+            "app": "kinesistomssql",
+            "pod-template-hash": "3083870361",
+            "spark-role": "driver"
+        },
+        "name": "kinesistomssql-74d7dc47b5-8cqvx",
+        "namespace": "default",
+        "ownerReferences": [
+            {
+                "apiVersion": "extensions/v1beta1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "ReplicaSet",
+                "name": "kinesistomssql-74d7dc47b5",
+                "uid": "07fbfda6-681d-11e8-9e5b-80e6500c86d2"
+            }
+        ],
+        "resourceVersion": "212071",
+        "selfLink": "/api/v1/namespaces/default/pods/kinesistomssql-74d7dc47b5-8cqvx",
+        "uid": "07fe567b-681d-11e8-9e5b-80e6500c86d2"
+    },
+    "spec": {
+        "containers": [
+            {
+                "env": [
+                    {
+                        "name": "AWS_SHARED_CREDENTIALS_FILE",
+                        "value": "/var/run/secrets/aws/credentials"
+                    }
+                ],
+                "envFrom": [
+                    {
+                        "configMapRef": {
+                            "name": "kinesistomssql-defaults",
+                            "optional": false
+                        }
+                    },
+                    {
+                        "configMapRef": {
+                            "name": "kinesistomssql-overrides",
+                            "optional": true
+                        }
+                    },
+                    {
+                        "secretRef": {
+                            "name": "kinesistomssql",
+                            "optional": false
+                        }
+                    }
+                ],
+                "image": "registry.kube-system.svc.cluster.local:80/kinesistomssql@sha256:8f687ce9204a646e7053a5e58fbb90bdac2a5457620002cfd744f03ab9d48a48",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "spark-kubernetes-driver",
+                "ports": [
+                    {
+                        "containerPort": 4040,
+                        "name": "http-spark",
+                        "protocol": "TCP"
+                    }
+                ],
+                "resources": {
+                    "limits": {
+                        "memory": "1100Mi"
+                    },
+                    "requests": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "FallbackToLogsOnError",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/var/run/secrets/aws",
+                        "name": "aws-creds"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "spark-driver-token-98vrx",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "nodeName": "minikube",
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "spark-driver",
+        "serviceAccountName": "spark-driver",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            }
+        ],
+        "volumes": [
+            {
+                "name": "aws-creds",
+                "secret": {
+                    "defaultMode": 444,
+                    "optional": false,
+                    "secretName": "kinesistomssql-aws"
+                }
+            },
+            {
+                "name": "spark-driver-token-98vrx",
+                "secret": {
+                    "defaultMode": 420,
+                    "secretName": "spark-driver-token-98vrx"
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2018-06-04T17:30:53Z",
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2018-06-04T17:34:24Z",
+                "message": "containers with unready status: [spark-kubernetes-driver]",
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2018-06-04T17:30:53Z",
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "containerID": "docker://d995cb0b59194dcc60b4fd722707552d57434d1a97269cc608b2ee6104a064c9",
+                "image": "sha256:c0b5bb9f714ae6125d328f97366a60139be1808c27f7cd5eef9e56006497eac9",
+                "imageID": "docker-pullable://registry.kube-system.svc.cluster.local:80/kinesistomssql@sha256:8f687ce9204a646e7053a5e58fbb90bdac2a5457620002cfd744f03ab9d48a48",
+                "lastState": {
+                    "terminated": {
+                        "containerID": "docker://d995cb0b59194dcc60b4fd722707552d57434d1a97269cc608b2ee6104a064c9",
+                        "exitCode": 1,
+                        "finishedAt": "2018-06-04T17:34:24Z",
+                        "message": "Exception in thread \"main\" java.lang.NullPointerException\n\tat com.redventures.simplepipeline.sources.kinesis.SparkKinesisSource.\u003cinit\u003e(SparkKinesisSource.scala:53)\n\tat com.redventures.simplepipeline.app.KinesisToMssql.\u003cinit\u003e(KinesisToMssql.scala:50)\n\tat com.redventures.simplepipeline.app.kinesistomssql.KinesisToMssql$$anon$1.\u003cinit\u003e(KinesisToMssql.scala:12)\n\tat com.redventures.simplepipeline.app.kinesistomssql.KinesisToMssql$.main(KinesisToMssql.scala:12)\n\tat com.redventures.simplepipeline.app.kinesistomssql.KinesisToMssql.main(KinesisToMssql.scala)\n",
+                        "reason": "Error",
+                        "startedAt": "2018-06-04T17:34:20Z"
+                    }
+                },
+                "name": "spark-kubernetes-driver",
+                "ready": false,
+                "restartCount": 5,
+                "state": {
+                    "waiting": {
+                        "message": "Back-off 2m40s restarting failed container=spark-kubernetes-driver pod=kinesistomssql-74d7dc47b5-8cqvx_default(07fe567b-681d-11e8-9e5b-80e6500c86d2)",
+                        "reason": "CrashLoopBackOff"
+                    }
+                }
+            }
+        ],
+        "hostIP": "10.150.144.151",
+        "phase": "Running",
+        "podIP": "172.17.0.9",
+        "qosClass": "Burstable",
+        "startTime": "2018-06-04T17:30:53Z"
+    }
+}

@@ -1,0 +1,104 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"io/ioutil"
+	"net/http"
+	"encoding/json"
+	"time"
+	"path/filepath"
+	"strings"
+	"io"
+	"crypto/x509"
+	"crypto/tls"
+)
+
+func withinClusterGetPodInfo() *PodInfo {
+	hostname, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+	token, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+	if err != nil {
+		panic(err)
+	}
+	namespace, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil {
+		panic(err)
+	}
+	caCert, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		RootCAs: caCertPool,
+	}
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	client := &http.Client{Transport: transport}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://kubernetes.default.svc/api/v1/namespaces/%s/pods/%s", namespace, hostname), nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	podInfo := &PodInfo{}
+PODINFO_REQ:
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(body, podInfo)
+	if err != nil {
+		panic(err)
+	}
+	if podInfo.Status.PodIP == "" {
+		log.Printf("WARN: PodIP missing, waiting & trying again")
+		time.Sleep(time.Second)
+		goto PODINFO_REQ
+	}
+	return podInfo
+}
+
+func withinContainerGetMainClass() string {
+	return environmentVars(os.Environ()).mustGet("MAIN_CLASS")
+}
+
+func withinContainerGetClasspath() string {
+	classpath := ""
+	classpathFile := ""
+	// find the classpath file
+	// todo: there has GOT to be a better way to do this :(
+	err := filepath.Walk("/app", func(path string, f os.FileInfo, _ error) error {
+		if ! f.IsDir() && strings.HasSuffix(path, ".classpath") {
+			classpathFile = path
+			return io.EOF // returning this error lets us stop the search once we've found our file. we'll nil out the error later
+		}
+		return nil
+	})
+	if err == io.EOF {
+		err = nil
+	}
+	if err != nil {
+		panic(fmt.Sprintf("Error searching for classpath file: %s", err))
+	}
+	log.Printf("INFO: Loading classpath from '%s'", classpathFile)
+	data, err := ioutil.ReadFile(classpathFile)
+	if err != nil {
+		panic(err)
+	}
+	classpath = string(data)
+	if classpath == "" {
+		panic("Could not find classpath data!!! D:")
+	}
+	return fmt.Sprintf("/app:%s", classpath)
+}

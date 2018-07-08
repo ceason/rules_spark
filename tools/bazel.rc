@@ -1,0 +1,3 @@
+build --workspace_status_command=./tools/print-workspace-status.sh --stamp=yes
+test --verbose_failures=true
+test --test_output=errors

@@ -1,0 +1,25 @@
+load("@io_bazel_rules_docker//container:layer.bzl", "container_layer")
+
+
+container_layer(
+    name = "hadoop_native.layer",
+    data_path = ".",
+    directory = "/opt/hadoop",
+    env = {
+        "LD_LIBRARY_PATH": "/opt/hadoop/lib/native",
+    },
+    files = [
+        "@hadoop_archive//:lib_native",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+container_layer(
+    name = "launcher.layer",
+    files = [
+        "//launcher",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+

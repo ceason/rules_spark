@@ -1,0 +1,33 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <profiles>
+    <profile>
+    <id>palantir</id>
+	<repositories>
+		<repository>
+			<id>palantir-releases</id>
+			<name>Palantir Releases</name>
+			<url>https://dl.bintray.com/palantir/releases/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+    </profile>
+  </profiles>
+
+<activeProfiles>
+    <activeProfile>palantir</activeProfile>
+  </activeProfiles>
+</settings>

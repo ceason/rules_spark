@@ -1,0 +1,24 @@
+load("//spark:scala.bzl", "spark_scala_image")
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+
+spark_scala_image(
+    name = "streamingwordcount",
+    srcs = ["Main.scala"],
+    files = [":log4j.properties"],
+    layers = [
+        "@rules_spark//jar_bundle",
+    ],
+    main_class = "com.example.streamingwordcount.Main",
+)
+
+k8s_object(
+    name = "deployment",
+    cluster = "{STABLE_K8S_CLUSTER}",
+    image_chroot = "{STABLE_IMAGE_CHROOT}",
+    images = {
+        "streamingwordcount:dev": ":streamingwordcount",
+    },
+    kind = "deployment",
+    template = ":deployment.yaml",
+    visibility = ["//visibility:public"],
+)

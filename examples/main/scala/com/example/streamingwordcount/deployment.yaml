@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: streamingwordcount-defaults
+  labels:
+    app: streamingwordcount
+data:
+  SPARK_DRIVER_MEMORY: 1g
+  SPARK_EXECUTOR_INSTANCES: "2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: streamingwordcount
+  labels:
+    app: streamingwordcount
+spec:
+  ports:
+  - {name: http-spark, port: 80, targetPort: http-spark}
+  selector:
+    app: streamingwordcount
+    spark-role: driver
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamingwordcount
+  labels:
+    app: streamingwordcount
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &podLabels
+      app: streamingwordcount
+      spark-role: driver
+  template:
+    metadata:
+      labels: {<<: *podLabels}
+    spec:
+      serviceAccountName: spark-driver
+      containers:
+      - name: spark-kubernetes-driver
+        image: streamingwordcount:dev
+        terminationMessagePolicy: FallbackToLogsOnError
+        args:
+        - 192.168.122.1
+        envFrom:
+        - configMapRef: {optional: false, name: streamingwordcount-defaults}
+        - configMapRef: {optional: true,  name: streamingwordcount-overrides}
+        resources:
+          limits: {memory: 1100Mi}
+          requests: {cpu: "1000m", memory: 1Gi}
+        ports:
+        - containerPort: 4040
+          name: http-spark
