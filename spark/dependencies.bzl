@@ -1,4 +1,5 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@io_bazel_rules_docker//container:pull.bzl", "container_pull")
 
 HADOOP_VERSION="2.8.3"
 MAVEN_VERSION="3.5.3"
@@ -90,4 +91,13 @@ filegroup (
             name = "io_bazel_rules_k8s",
             commit = "d6e1b65317246fe044482f9e042556c77e6893b8",
             remote = "git@github.com:bazelbuild/rules_k8s.git",
+        )
+
+    if "openjdk_8" not in existing:
+        container_pull(
+            name = "openjdk_8",
+            registry = "index.docker.io",
+            repository = "library/openjdk",
+            tag = "8-jre",
+            visibility = ["//visibility:public"],
         )

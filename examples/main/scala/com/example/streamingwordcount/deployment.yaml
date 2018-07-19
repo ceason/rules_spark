@@ -43,7 +43,7 @@ spec:
         image: streamingwordcount:dev
         terminationMessagePolicy: FallbackToLogsOnError
         args:
-        - 192.168.122.1
+        - 10.150.144.151
         envFrom:
         - configMapRef: {optional: false, name: streamingwordcount-defaults}
         - configMapRef: {optional: true,  name: streamingwordcount-overrides}

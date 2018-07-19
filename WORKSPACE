@@ -1,5 +1,13 @@
 workspace(name = "rules_spark")
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "io_bazel_rules_docker",
+    commit = "7401cb256222615c497c0dee5a4de5724a4f4cc7",
+    remote = "git@github.com:bazelbuild/rules_docker.git",
+)
+
 load("//spark:dependencies.bzl", "spark_repositories")
 
 spark_repositories()

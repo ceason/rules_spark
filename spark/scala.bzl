@@ -31,7 +31,7 @@ def spark_scala_image(name, main_class, base=None,
                       jvm_flags=jvm_flags, **kwargs)
 
 
-  base = base or DEFAULT_JAVA_BASE
+  base = base or "@openjdk_8//image"
   for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
     jar_dep_layer(name=this_name, base=base, dep=dep)
