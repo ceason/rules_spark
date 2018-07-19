@@ -38,6 +38,13 @@
 			<version>2.4.0-palantir.20</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql-kafka-0-10_2.11</artifactId>
+			<version>2.4.0-palantir.20</version>
+		</dependency>
+
+
 		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-streaming-kinesis-asl -->
 		<dependency>
 			<groupId>org.apache.spark</groupId>
