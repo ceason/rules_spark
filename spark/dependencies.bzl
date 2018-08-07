@@ -1,45 +1,23 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@io_bazel_rules_docker//container:pull.bzl", "container_pull")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("//spark:uberjar.bzl", "maven_uberjar")
 
-HADOOP_VERSION="2.8.3"
-MAVEN_VERSION="3.5.3"
-MAVEN_MIRRORS=[
-    "http://ftp.wayne.edu",
-]
-HADOOP_MIRRORS=[
+SPARK_VERSION = "2.4.0-palantir.20"
+
+HADOOP_VERSION = "2.8.3"
+HADOOP_TGZ_SHA256 = "e8bf9a53337b1dca3b152b0a5b5e277dc734e76520543e525c301a050bb27eae"
+HADOOP_MIRRORS = [
     "http://archive.apache.org/dist",
     "http://apache.mirrors.ionfish.org",
     "http://apache.claz.org",
 ]
 
 def spark_repositories():
-
-    existing = native.existing_rules().keys()
-
-    if "maven" not in existing:
-        native.new_http_archive(
-            name = "maven",
-            workspace_file_content = """
-workspace(name = "maven")
-""",
-            build_file_content = """
-sh_binary(
-    name = "mvn",
-    srcs = ["bin/mvn"],
-    data = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-""",
-            strip_prefix = "apache-maven-%s" % MAVEN_VERSION,
-            urls = ["{mirror}/apache/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz".format(
-                mirror = mirror,
-                version = MAVEN_VERSION,
-            ) for mirror in MAVEN_MIRRORS],
-        )
-
+    existing = native.existing_rules()
 
     if "hadoop_archive" not in existing:
-        native.new_http_archive(
+        http_archive(
             name = "hadoop_archive",
             workspace_file_content = """
 workspace(name = "hadoop_archive")
@@ -55,7 +33,8 @@ filegroup (
             urls = ["{mirror}/hadoop/common/hadoop-{version}/hadoop-{version}.tar.gz".format(
                 mirror = mirror,
                 version = HADOOP_VERSION,
-            ) for mirror in HADOOP_MIRRORS]
+            ) for mirror in HADOOP_MIRRORS],
+            sha256 = HADOOP_TGZ_SHA256,
         )
 
     if "io_bazel_rules_go" not in existing:
@@ -100,4 +79,24 @@ filegroup (
             repository = "library/openjdk",
             tag = "8-jre",
             visibility = ["//visibility:public"],
+        )
+
+    if "spark_uberjar" not in existing:
+        maven_uberjar(
+            name = "spark_uberjar",
+            dependencies = [
+                "org.apache.spark:spark-dist_2.11-hadoop-palantir:pom:" + SPARK_VERSION,
+                "org.apache.spark:spark-streaming-kafka-0-10_2.11:" + SPARK_VERSION,
+                "org.apache.spark:spark-sql-kafka-0-10_2.11:" + SPARK_VERSION,
+                "org.apache.spark:spark-streaming-kinesis-asl_2.11:" + SPARK_VERSION,
+                "com.amazonaws:aws-java-sdk:1.11.45",
+                "com.squareup.okio:okio:1.13.0",
+            ],
+            repositories = [
+                "https://dl.bintray.com/palantir/releases/",
+            ],
+            shaded_packages = [
+                "com.google.protobuf",
+                "com.google.guava",
+            ],
         )
