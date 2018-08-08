@@ -81,9 +81,9 @@ filegroup (
             visibility = ["//visibility:public"],
         )
 
-    if "spark_uberjar" not in existing:
+    if "rules_spark_jar_bundle" not in existing:
         maven_uberjar(
-            name = "spark_uberjar",
+            name = "rules_spark_jar_bundle",
             dependencies = [
                 "org.apache.spark:spark-dist_2.11-hadoop-palantir:pom:" + SPARK_VERSION,
                 "org.apache.spark:spark-streaming-kafka-0-10_2.11:" + SPARK_VERSION,

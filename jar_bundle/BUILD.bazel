@@ -2,6 +2,6 @@ load("@io_bazel_rules_scala//scala:scala_import.bzl", "scala_import")
 
 alias(
     name = "jar_bundle",
-    actual = "@spark_uberjar//:jar",
+    actual = "@rules_spark_jar_bundle//:jar",
     visibility = ["//visibility:public"]
 )
