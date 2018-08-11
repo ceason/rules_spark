@@ -75,9 +75,9 @@ filegroup (
     if "openjdk_8" not in existing:
         container_pull(
             name = "openjdk_8",
-            registry = "gcr.io",
-            repository = "distroless/java",
-            tag = "debug", # 'debug' tag is necessary because it contains cli commands required for hadoop
+            registry = "index.docker.io",
+            repository = "library/openjdk",
+            tag = "8-jre",
             visibility = ["//visibility:public"],
         )
 
