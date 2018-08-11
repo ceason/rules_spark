@@ -92,6 +92,9 @@ def _pom_shade_plugin(artifact_includes = [], artifact_excludes = [], shaded_pac
                                  <exclude>META-INF/*.SF</exclude>
                                  <exclude>META-INF/*.DSA</exclude>
                                  <exclude>META-INF/*.RSA</exclude>
+                                 <exclude>META-INF/maven/**</exclude>
+                                 <exclude>META-INF/DEPENDENCIES</exclude>
+                                 <exclude>META-INF/NOTICE</exclude>
                                  <exclude>META-INF/MANIFEST.MF</exclude>
                              </excludes>
                          </filter>
@@ -106,13 +109,9 @@ def _pom_shade_plugin(artifact_includes = [], artifact_excludes = [], shaded_pac
                          <configuration>
                              <transformers>
                                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
-                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
-                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                     <resource>reference.conf</resource>
-                                 </transformer>
                                  <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                      <resource>log4j.properties</resource>
+                                     <resource>reference.conf</resource>
                                  </transformer>
                              </transformers>
                          </configuration>
@@ -316,23 +315,9 @@ def _uberjar_impl(ctx):
 
     # write workspace & build files
     ctx.file("WORKSPACE", content = """workspace(name = "%s")""" % ctx.attr.name, executable = False)
-    ctx.file("BUILD.bazel", content = """load("@io_bazel_rules_scala//scala:scala_import.bzl", "scala_import")
-
-# java_import(
-scala_import(
-    name = "java_jar",
-    jars = ["uberjar-java/target/uberjar-java-1.0-SNAPSHOT.jar"],
-#    srcjar = "uberjar-java/target/uberjar-java-1.0-SNAPSHOT-sources.jar",
-)
-
-scala_import(
-    name = "jar",
-    jars = ["uberjar-scala/target/uberjar-scala-1.0-SNAPSHOT.jar"],
-    deps = [":java_jar"],
-    exports = [":java_jar"],
-    visibility = ["//visibility:public"],
-)
-""", executable = False)
+    ctx.template("BUILD.bazel", ctx.attr._uberjar_build_template, executable = False, substitutions = {
+        "{name}": ctx.attr.name,
+    })
 
     # write settings xml
     settings_xml = _settings_xml_content(ctx)
@@ -382,9 +367,8 @@ scala_import(
         sha256 = _MAVEN_TGZ_SHA256,
         stripPrefix = "apache-maven-%s" % _MAVEN_VERSION,
     )
-    ctx.execute(["echo", "Fetching '@%s//:jar' (this might take a minute)..." % ctx.attr.name], quiet=False)
+    ctx.execute(["echo", "Fetching '@%s//:jar' (this might take a minute)..." % ctx.attr.name], quiet = False)
     _mvn(ctx, "package")
-
 
 maven_uberjar = repository_rule(
     implementation = _uberjar_impl,
@@ -394,5 +378,9 @@ maven_uberjar = repository_rule(
         "repositories": attr.string_list(default = []),
         "shaded_packages": attr.string_list(default = []),
         "shaded_packages_prefix": attr.string(default = "shaded."),
+        "_uberjar_build_template": attr.label(
+            default = "@rules_spark//spark/internal:uberjar.BUILD",
+            allow_single_file = True,
+        ),
     },
 )
