@@ -15,16 +15,33 @@ import (
 	"crypto/tls"
 )
 
-func withinClusterGetPodInfo() *PodInfo {
-	hostname, err := os.Hostname()
+type k8sClient struct {
+	http.Client
+	token string
+	baseUrl string
+}
+
+// Automatically sets auth header
+func (c *k8sClient) Do(req *http.Request) (*http.Response, error) {
+	if req.Header.Get("Authorization") == "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	}
+	return c.Client.Do(req)
+}
+
+// Automatically sets correct URL and auth header. Will panic if request is invalid.
+func (c *k8sClient) mustNewRequest(method, url string, body io.Reader) *http.Request {
+	req, err := http.NewRequest(method, c.baseUrl + url, body)
 	if err != nil {
 		panic(err)
 	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	return req
+}
+
+// Http client which automagically handles authorization
+func newInClusterClient() *k8sClient {
 	token, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
-	if err != nil {
-		panic(err)
-	}
-	namespace, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
 		panic(err)
 	}
@@ -40,13 +57,24 @@ func withinClusterGetPodInfo() *PodInfo {
 		RootCAs: caCertPool,
 	}
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
-	client := &http.Client{Transport: transport}
+	client := http.Client{Transport: transport}
+	return &k8sClient{client, string(token), "https://kubernetes.default.svc"}
+}
 
+func withinClusterGetPodInfo() *PodInfo {
+	hostname, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+	namespace, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil {
+		panic(err)
+	}
+	client := newInClusterClient()
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://kubernetes.default.svc/api/v1/namespaces/%s/pods/%s", namespace, hostname), nil)
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	podInfo := &PodInfo{}
 PODINFO_REQ:
 	resp, err := client.Do(req)

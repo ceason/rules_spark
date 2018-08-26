@@ -23,7 +23,6 @@ type driverLauncher struct {
 	podInfo                  *PodInfo
 	mainClass                string
 	appArgs                  []string
-	now                      time.Time
 	nopassthroughLabels      []string
 	nopassthroughAnnotations []string
 	nopassthroughEnv         []string
@@ -86,8 +85,6 @@ type Container struct {
 }
 
 type PodInfo struct {
-	APIVersion string `json:"apiVersion"`
-	Kind       string `json:"kind"`
 	Metadata struct {
 		CreationTimestamp time.Time         `json:"creationTimestamp"`
 		GenerateName      string            `json:"generateName"`
@@ -165,4 +162,9 @@ type PodInfo struct {
 		QosClass  string    `json:"qosClass"`
 		StartTime time.Time `json:"startTime"`
 	} `json:"status"`
+}
+
+
+type PodInfoList struct {
+	Items []PodInfo `json:"items"`
 }

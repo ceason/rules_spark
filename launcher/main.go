@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"time"
 	"flag"
 	"strings"
 	"regexp"
@@ -60,7 +59,6 @@ func main() {
 			withinClusterGetPodInfo(),
 			*driverMainClass,
 			args,
-			time.Now(),
 			listArgSeparator.Split(*nopassthroughLabels, -1),
 			listArgSeparator.Split(*nopassthroughAnnotations, -1),
 			listArgSeparator.Split(*nopassthroughEnv, -1),

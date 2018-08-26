@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
-	"time"
 	"strings"
 )
 
@@ -19,7 +18,6 @@ func TestDriverLauncher(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	now, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	l := driverLauncher{
 		podInfo:   podInfo,
 		mainClass: "com.example.Main",
@@ -33,7 +31,6 @@ func TestDriverLauncher(t *testing.T) {
 		appArgs: []string{
 			"--args=for", "-my", "app",
 		},
-		now: now,
 	}
 
 	actual, err := l.getCommand()
